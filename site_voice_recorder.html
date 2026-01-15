@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Site Safety Voice Report</title>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:20px;">
+  <h2>🎤 Record Your Safety / Work Issue</h2>
+  <p>100% Anonymous</p>
+
+  <button id="recordBtn" style="font-size:20px; padding:10px 20px;">Start Recording</button>
+  <button id="stopBtn" style="font-size:20px; padding:10px 20px;" disabled>Stop</button>
+  <p id="status"></p>
+
+  <script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const status = document.getElementById("status");
+
+    recordBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => {
+        audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        status.innerText = "Uploading audio...";
+        const blob = new Blob(audioChunks, { type: "audio/webm" });
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result.split(',')[1];
+          try {
+            const res = await fetch(https://script.google.com/macros/s/AKfycbwWolAOZ4ihM_wT0bCjtqWFbrgK1_ZZeVSBOTdOa7WufJN1oZEPANCV4OkYfnjd_dA/exec, {
+              method: "POST",
+              body: base64data
+            });
+            const text = await res.text();
+            status.innerText = text;
+          } catch(err) {
+            status.innerText = "Error: " + err;
+          }
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+      status.innerText = "Recording...";
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+  </script>
+</body>
+</html>
